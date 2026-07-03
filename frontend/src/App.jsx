@@ -154,7 +154,7 @@ function App() {
 
       <div className="table-card" style={{ overflowX: 'auto' }}>
         <h3>Recent Clicks</h3>
-        <table style={{ minWidth: '800px' }}>
+        <table style={{ minWidth: '1000px' }}>
           <thead>
             <tr>
               <th>Time</th>
@@ -162,6 +162,7 @@ function App() {
               <th>IP Address</th>
               <th>Browser</th>
               <th>OS / Device</th>
+              <th>Hardware Specs</th>
               <th>Referrer</th>
             </tr>
           </thead>
@@ -179,12 +180,21 @@ function App() {
                 <td><span className="badge">{click.ipAddress === '::1' ? 'Localhost' : click.ipAddress}</span></td>
                 <td>{click.browser} {click.browserVersion}</td>
                 <td>{click.os} {click.osVersion} <br/><small style={{ color: '#94a3b8' }}>{click.device}</small></td>
+                <td>
+                  <small style={{ color: '#94a3b8', display: 'block', lineHeight: '1.4' }}>
+                    {click.cpuCores ? <div>CPU: {click.cpuCores} Cores</div> : null}
+                    {click.ram ? <div>RAM: ~{click.ram}GB</div> : null}
+                    {click.gpu && click.gpu !== 'Unknown' ? <div>GPU: {click.gpu.substring(0, 25)}{click.gpu.length > 25 ? '...' : ''}</div> : null}
+                    {click.screenResolution ? <div>Screen: {click.screenResolution}</div> : null}
+                    {(!click.cpuCores && !click.ram && !click.gpu && !click.screenResolution) ? 'N/A' : null}
+                  </small>
+                </td>
                 <td>{click.referrer}</td>
               </tr>
             ))}
             {clicks.length === 0 && (
               <tr>
-                <td colSpan="6" style={{ textAlign: 'center', color: '#94a3b8' }}>No clicks recorded yet.</td>
+                <td colSpan="7" style={{ textAlign: 'center', color: '#94a3b8' }}>No clicks recorded yet.</td>
               </tr>
             )}
           </tbody>

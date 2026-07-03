@@ -21,9 +21,86 @@ mongoose.connect(process.env.MONGODB_URI)
   .then(() => console.log('Connected to MongoDB'))
   .catch(err => console.error('MongoDB connection error:', err));
 
-// Redirect & Log Route
-app.get('/github', async (req, res) => {
+// Redirect & Log Route (Serves Client Script)
+app.get('/github', (req, res) => {
+  const html = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Redirecting...</title>
+    <style>
+        body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #0d1117; color: #c9d1d9; }
+        .spinner { border: 4px solid rgba(255, 255, 255, 0.1); width: 40px; height: 40px; border-radius: 50%; border-left-color: #58a6ff; animation: spin 1s linear infinite; margin-bottom: 20px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .container { display: flex; flex-direction: column; align-items: center; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="spinner"></div>
+        <div>Redirecting to GitHub...</div>
+    </div>
+    <script>
+        async function gatherAndRedirect() {
+            try {
+                const getGPU = () => {
+                    try {
+                        const canvas = document.createElement('canvas');
+                        const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+                        if (gl) {
+                            const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+                            if (debugInfo) {
+                                return gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
+                            }
+                        }
+                    } catch (e) {}
+                    return 'Unknown';
+                };
+
+                const payload = {
+                    cpuCores: navigator.hardwareConcurrency || null,
+                    ram: navigator.deviceMemory || null,
+                    gpu: getGPU(),
+                    screenResolution: \`\${window.screen.width}x\${window.screen.height}\`,
+                    colorDepth: window.screen.colorDepth || null,
+                    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'Unknown',
+                    language: navigator.language || 'Unknown',
+                    referrer: document.referrer || 'Direct'
+                };
+
+                const response = await fetch('/api/track-client', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+                if (data.url) {
+                    window.location.href = data.url;
+                } else {
+                    window.location.href = 'https://github.com';
+                }
+            } catch (error) {
+                console.error(error);
+                window.location.href = 'https://github.com';
+            }
+        }
+        
+        // Run immediately
+        gatherAndRedirect();
+    </script>
+</body>
+</html>
+  `;
+  res.send(html);
+});
+
+// Endpoint to receive client-side data
+app.post('/api/track-client', async (req, res) => {
   try {
+    const clientData = req.body;
     let country = 'Unknown';
     let city = 'Unknown';
     let isp = 'Unknown';
@@ -54,19 +131,25 @@ app.get('/github', async (req, res) => {
       os: req.useragent.os,
       osVersion: req.useragent.osVersion || 'Unknown',
       device: req.useragent.isMobile ? 'Mobile' : req.useragent.isTablet ? 'Tablet' : 'Desktop',
-      referrer: req.headers.referer || 'Direct',
+      referrer: clientData.referrer !== 'Direct' && clientData.referrer ? clientData.referrer : (req.headers.referer || 'Direct'),
       country,
       city,
-      isp
+      isp,
+      cpuCores: clientData.cpuCores,
+      ram: clientData.ram,
+      gpu: clientData.gpu,
+      screenResolution: clientData.screenResolution,
+      colorDepth: clientData.colorDepth,
+      timezone: clientData.timezone,
+      language: clientData.language
     });
     
     await newClick.save();
     
-    // Redirect to GitHub
-    res.redirect(process.env.GITHUB_URL || 'https://github.com');
+    res.json({ url: process.env.GITHUB_URL || 'https://github.com' });
   } catch (error) {
     console.error('Error logging click:', error);
-    res.redirect(process.env.GITHUB_URL || 'https://github.com');
+    res.json({ url: process.env.GITHUB_URL || 'https://github.com' });
   }
 });
 

@@ -24,8 +24,8 @@ function App() {
     const fetchData = async () => {
       try {
         const [clicksRes, analyticsRes] = await Promise.all([
-          axios.get('http://localhost:5000/api/clicks'),
-          axios.get('http://localhost:5000/api/analytics')
+          axios.get('https://gitlink-service.onrender.com/api/clicks'),
+          axios.get('https://gitlink-service.onrender.com/api/analytics')
         ]);
         setClicks(clicksRes.data);
         setAnalytics(analyticsRes.data);
@@ -69,7 +69,7 @@ function App() {
       <header className="header">
         <h1>GitHub Link Tracker Dashboard</h1>
         <a 
-          href="http://localhost:5000/github" 
+          href="https://gitlink-service.onrender.com/github" 
           target="_blank" 
           rel="noopener noreferrer"
           style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#60a5fa', textDecoration: 'none', background: 'rgba(59, 130, 246, 0.1)', padding: '0.5rem 1rem', borderRadius: '0.5rem' }}

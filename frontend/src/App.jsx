@@ -152,12 +152,13 @@ function App() {
         </div>
       </div>
 
-      <div className="table-card">
+      <div className="table-card" style={{ overflowX: 'auto' }}>
         <h3>Recent Clicks</h3>
-        <table>
+        <table style={{ minWidth: '800px' }}>
           <thead>
             <tr>
               <th>Time</th>
+              <th>Location & ISP</th>
               <th>IP Address</th>
               <th>Browser</th>
               <th>OS / Device</th>
@@ -165,18 +166,25 @@ function App() {
             </tr>
           </thead>
           <tbody>
-            {clicks.slice(0, 10).map((click, index) => (
+            {clicks.slice(0, 15).map((click, index) => (
               <tr key={index}>
                 <td>{new Date(click.timestamp).toLocaleString()}</td>
+                <td>
+                  {click.city && click.city !== 'Unknown' 
+                    ? `${click.city}, ${click.country}` 
+                    : 'Unknown Location'}
+                  <br/>
+                  <small style={{ color: '#94a3b8' }}>{click.isp}</small>
+                </td>
                 <td><span className="badge">{click.ipAddress === '::1' ? 'Localhost' : click.ipAddress}</span></td>
-                <td>{click.browser}</td>
-                <td>{click.os} / {click.device}</td>
+                <td>{click.browser} {click.browserVersion}</td>
+                <td>{click.os} {click.osVersion} <br/><small style={{ color: '#94a3b8' }}>{click.device}</small></td>
                 <td>{click.referrer}</td>
               </tr>
             ))}
             {clicks.length === 0 && (
               <tr>
-                <td colSpan="5" style={{ textAlign: 'center', color: '#94a3b8' }}>No clicks recorded yet.</td>
+                <td colSpan="6" style={{ textAlign: 'center', color: '#94a3b8' }}>No clicks recorded yet.</td>
               </tr>
             )}
           </tbody>

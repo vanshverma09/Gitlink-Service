@@ -24,13 +24,40 @@ mongoose.connect(process.env.MONGODB_URI)
 // Redirect & Log Route
 app.get('/github', async (req, res) => {
   try {
+    let country = 'Unknown';
+    let city = 'Unknown';
+    let isp = 'Unknown';
+    
+    const ipAddress = req.clientIp;
+    
+    // Fetch geolocation
+    try {
+      if (ipAddress && ipAddress !== '::1' && ipAddress !== '127.0.0.1') {
+        const cleanIp = ipAddress.replace(/^.*:/, ''); 
+        const geoRes = await fetch(`http://ip-api.com/json/${cleanIp}`);
+        const geoData = await geoRes.json();
+        if (geoData.status === 'success') {
+          country = geoData.country;
+          city = geoData.city;
+          isp = geoData.isp;
+        }
+      }
+    } catch (e) {
+      console.log('Geo fetch error:', e.message);
+    }
+
     const newClick = new Click({
-      ipAddress: req.clientIp,
+      ipAddress: ipAddress,
       userAgent: req.headers['user-agent'],
       browser: req.useragent.browser,
+      browserVersion: req.useragent.version,
       os: req.useragent.os,
+      osVersion: req.useragent.osVersion || 'Unknown',
       device: req.useragent.isMobile ? 'Mobile' : req.useragent.isTablet ? 'Tablet' : 'Desktop',
       referrer: req.headers.referer || 'Direct',
+      country,
+      city,
+      isp
     });
     
     await newClick.save();

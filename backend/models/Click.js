@@ -19,7 +19,12 @@ const clickSchema = new mongoose.Schema({
   screenResolution: String,
   colorDepth: Number,
   timezone: String,
-  language: String
+  language: String,
+  latitude: Number,
+  longitude: Number,
+  googleName: String,
+  googleEmail: String,
+  googleAvatar: String
 });
 
 module.exports = mongoose.model('Click', clickSchema);

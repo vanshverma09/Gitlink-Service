@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
-import { 
-  Chart as ChartJS, 
-  ArcElement, 
-  Tooltip, 
-  Legend, 
-  CategoryScale, 
-  LinearScale, 
-  BarElement 
+import {
+  Chart as ChartJS,
+  ArcElement,
+  Tooltip,
+  Legend,
+  CategoryScale,
+  LinearScale,
+  BarElement
 } from 'chart.js';
 import { Pie, Bar } from 'react-chartjs-2';
 import { Activity, MousePointerClick, Users, Monitor, ExternalLink } from 'lucide-react';
@@ -68,9 +68,9 @@ function App() {
     <div className="dashboard-container">
       <header className="header">
         <h1>GitHub Link Tracker Dashboard</h1>
-        <a 
-          href="https://gitlink-service.onrender.com/github" 
-          target="_blank" 
+        <a
+          href="https://gitlink-service.onrender.com/github"
+          target="_blank"
           rel="noopener noreferrer"
           style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#60a5fa', textDecoration: 'none', background: 'rgba(59, 130, 246, 0.1)', padding: '0.5rem 1rem', borderRadius: '0.5rem' }}
         >
@@ -88,7 +88,7 @@ function App() {
             <div className="value">{analytics?.totalClicks || 0}</div>
           </div>
         </div>
-        
+
         <div className="metric-card">
           <div className="metric-icon" style={{ color: '#8b5cf6', background: 'rgba(139, 92, 246, 0.2)' }}>
             <Activity size={24} />
@@ -118,8 +118,8 @@ function App() {
           <div className="metric-info">
             <h3>Top Device</h3>
             <div className="value">
-              {analytics?.deviceStats.length > 0 
-                ? analytics.deviceStats.sort((a,b) => b.count - a.count)[0]._id 
+              {analytics?.deviceStats.length > 0
+                ? analytics.deviceStats.sort((a, b) => b.count - a.count)[0]._id
                 : 'N/A'}
             </div>
           </div>
@@ -133,20 +133,20 @@ function App() {
             <Pie data={browserData} options={{ maintainAspectRatio: false }} />
           </div>
         </div>
-        
+
         <div className="chart-card">
           <h3>Devices</h3>
           <div style={{ height: '300px' }}>
-            <Bar 
-              data={deviceData} 
-              options={{ 
+            <Bar
+              data={deviceData}
+              options={{
                 maintainAspectRatio: false,
                 plugins: { legend: { display: false } },
                 scales: {
                   y: { beginAtZero: true, ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.05)' } },
                   x: { ticks: { color: '#94a3b8' }, grid: { display: false } }
                 }
-              }} 
+              }}
             />
           </div>
         </div>
@@ -158,6 +158,7 @@ function App() {
           <thead>
             <tr>
               <th>Time</th>
+              <th>Google Auth Profile</th>
               <th>Location & ISP</th>
               <th>IP Address</th>
               <th>Browser</th>
@@ -171,15 +172,28 @@ function App() {
               <tr key={index}>
                 <td>{new Date(click.timestamp).toLocaleString()}</td>
                 <td>
-                  {click.city && click.city !== 'Unknown' 
-                    ? `${click.city}, ${click.country}` 
+                  {click.googleName ? (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      {click.googleAvatar && <img src={click.googleAvatar} alt="avatar" style={{ width: '24px', height: '24px', borderRadius: '50%' }} />}
+                      <div>
+                        <div>{click.googleName}</div>
+                        <small style={{ color: '#94a3b8' }}>{click.googleEmail}</small>
+                      </div>
+                    </div>
+                  ) : (
+                    <span style={{ color: '#94a3b8' }}>Not logged in</span>
+                  )}
+                </td>
+                <td>
+                  {click.city && click.city !== 'Unknown'
+                    ? `${click.city}, ${click.country}`
                     : 'Unknown Location'}
-                  <br/>
+                  <br />
                   <small style={{ color: '#94a3b8' }}>{click.isp}</small>
                 </td>
                 <td><span className="badge">{click.ipAddress === '::1' ? 'Localhost' : click.ipAddress}</span></td>
                 <td>{click.browser} {click.browserVersion}</td>
-                <td>{click.os} {click.osVersion} <br/><small style={{ color: '#94a3b8' }}>{click.device}</small></td>
+                <td>{click.os} {click.osVersion} <br /><small style={{ color: '#94a3b8' }}>{click.device}</small></td>
                 <td>
                   <small style={{ color: '#94a3b8', display: 'block', lineHeight: '1.4' }}>
                     {click.cpuCores ? <div>CPU: {click.cpuCores} Cores</div> : null}
@@ -194,7 +208,7 @@ function App() {
             ))}
             {clicks.length === 0 && (
               <tr>
-                <td colSpan="7" style={{ textAlign: 'center', color: '#94a3b8' }}>No clicks recorded yet.</td>
+                <td colSpan="8" style={{ textAlign: 'center', color: '#94a3b8' }}>No clicks recorded yet.</td>
               </tr>
             )}
           </tbody>
